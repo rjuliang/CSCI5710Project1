@@ -1,0 +1,87 @@
+1. What are the plates of the cars that have active permits in 2022 and 2023?
+
+select distinct v.car_plate
+from PARKING_ASSIGNMENT as p, VEHICLE as v
+where p.car_id = v.car_id and p.start_date >= '2022-01-01' and p.end_date <= '2023-12-31'
+order by p.start_date;
+
+2. What students are enrolled in 'Intro to CS' in 2022?
+
+select stu.student_id, stu.first_name, stu.last_name
+from COURSE as c, SECTION as s, ENROLLMENT as e, STUDENT as stu, SEMESTER as sem
+where s.course_id = c.course_id 
+AND s.section_id = e.section_id 
+AND e.student_id = stu.student_id
+AND s.semester_id = sem.semester_id
+AND sem.START_DATE >= '2022-01-01' AND sem.end_date <= '2022-12-31'
+AND c.course_title = 'Intro to CS';
+
+3. What are the names of professors that have a car registered with an active parking permit?
+
+select pro.first_name, pro.last_name
+from PARKING_ASSIGNMENT as p, VEHICLE as v, PROFESSOR as pro
+where p.car_id = v.car_id and p.start_date >= '2022-01-01' and p.car_id = pro.car_id;
+
+4. What sections will be available for 2023 for 'Intro to CS'?
+
+select s.section_id
+from SECTION as s, COURSE as c, SEMESTER as sem
+where s.course_id = c.course_id and s.semester_id = sem.semester_id and sem.start_date >= '2023-01-01' and sem.end_date <= '2023-12-31' and c.course_title = 'Intro to CS'
+order by section_id;
+
+5. How many sections professor Juan Perez will teach?
+
+select COUNT( distinct s.section_id)
+from SECTION as s, COURSE as c, PROFESSOR as p
+where s.course_id = c.course_id and s.professor_id = p.professor_id and p.first_name = "Juan" and p.last_name = "Perez" 
+order by section_id;
+
+6. What students is professor 'Alfred Molina' their advisor?
+
+select COUNT(student_id)
+from STUDENT as s, PROFESSOR as p
+where s.advisor_id = p.professor_id and p.first_name = "Alfred" and p.last_name = "Molina";
+
+7. What are of the full name of the professor that teach "Intro to Business Communication"?
+
+select distinct CONCAT(first_name, " ", last_name) as Professor
+from SECTION as s, PROFESSOR as p, COURSE as c
+where s.course_id = c.course_id
+and s.professor_id = p.professor_id
+and c.course_title = "Intro to Business Communication";
+
+8. What parking_ids will expire at the end of 2022?
+
+select distinct parking_id
+from PARKING_ASSIGNMENT as p
+where p.end_date = '2022-12-31';
+
+9. How many registered cars are 2015 or newer?
+
+select COUNT(car_id)
+from VEHICLE as v
+where car_year >= 2015;
+
+10. What is the average age of the professors?
+
+select AVG(YEAR(NOW()) - YEAR(birth_date)) as "Average Professor Age" from PROFESSOR;
+
+11. What are the course titles (and sections) the student Laura Aston enrolled to?
+
+select s.section_id, c.course_title
+from SECTION as s, COURSE as c, SEMESTER as sem, STUDENT as stu, ENROLLMENT as e
+where s.course_id = c.course_id 
+and s.semester_id= sem.semester_id 
+and stu.student_id = e.student_id 
+and e.section_id = s.section_id 
+and stu.first_name = "Laura" and stu.last_name = "Aston";
+
+12. What is the highest amount of sections a student is enrolled to?
+
+select MAX(m.sections) as 'The highest amount of sections a student is enrolled to'
+from (select COUNT(s.section_id) as sections, stu.student_id, CONCAT(stu.first_name, " ", last_name) as 'Student Name'/*, COUNT(s.section_id)*/
+from SECTION as s, STUDENT as stu, ENROLLMENT as e
+where stu.student_id = e.student_id 
+and e.section_id = s.section_id
+group by stu.student_id
+order by COUNT(s.section_id) desc) as m
